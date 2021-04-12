@@ -1,0 +1,17 @@
+{
+  "name": "deificx-lambda-instagram-event",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:deificx/deificx",
+  "author": "Even Alander <even@alander.org>",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "aws-sdk": "^2.884.0",
+    "sharp": "^0.28.1"
+  },
+  "scripts": {
+    "build": "rm instagram-event.zip && zip -r instagram-event.zip .",
+    "upload": "aws lambda update-function-code --function-name instagram-event --zip-file fileb://instagram-event.zip --region eu-west-1",
+    "start": "yarn build && yarn upload"
+  }
+}
