@@ -14,14 +14,18 @@ exports.handler = (event) =>
       .then(readFiles)
       .then(sortAndSlice)
       .then((data) => {
-        resolve({ body: JSON.stringify(data, null, 2), statusCode: 200 });
+        resolve({
+          body: JSON.stringify(data, null, 2),
+          headers: { "content-type": "application/json; charset=utf-8" },
+          statusCode: 200,
+        });
       })
       .catch((reason) => {
         console.error(reason);
         resolve({
-          contentType: "application/json; charset=utf-8",
-          statusCode: 500,
           body: JSON.stringify(reason, null, 2),
+          headers: { "content-type": "application/json; charset=utf-8" },
+          statusCode: 500,
         });
       });
   });
