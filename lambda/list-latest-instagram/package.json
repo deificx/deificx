@@ -1,0 +1,16 @@
+{
+  "name": "deificx-lambda-list-latest-instagram",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:deificx/deificx",
+  "author": "Even Alander <even@alander.org>",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "aws-sdk": "^2.884.0"
+  },
+  "scripts": {
+    "build": "rm list-latest-instagram.zip && zip -r list-latest-instagram.zip .",
+    "upload": "aws lambda update-function-code --function-name list-latest-instagram --zip-file fileb://list-latest-instagram.zip --region eu-central-1",
+    "start": "yarn build && yarn upload"
+  }
+}
