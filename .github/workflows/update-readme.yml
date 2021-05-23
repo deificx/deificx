@@ -1,0 +1,17 @@
+on: workflow_dispatch
+
+name: Update README
+jobs:
+  release:
+    name: Update README.md
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update README.md
+        uses: technote-space/create-pr-action@v2
+        with:
+          EXECUTE_COMMANDS: node updateReadme.js
+          COMMIT_MESSAGE: "update README.md"
+          COMMIT_NAME: "GitHub Actions"
+          COMMIT_EMAIL: "bot@alander.dev"
+          PR_BRANCH_NAME: "update-readme-${PR_ID}"
+          PR_TITLE: "update README.md"

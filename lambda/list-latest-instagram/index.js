@@ -76,6 +76,7 @@ function readFile(Key) {
           media_url:
             "https://alander.s3.eu-central-1.amazonaws.com/" +
             Key.replace(".json", ".jpg"),
+          permalink: parsed.permalink || "",
           timestamp: new Date(parsed.timestamp),
           thumbnail:
             "https://alander.s3.eu-central-1.amazonaws.com/" +
