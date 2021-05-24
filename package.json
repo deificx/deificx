@@ -1,0 +1,13 @@
+{
+  "name": "deificx",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:deificx/deificx",
+  "author": "Even Alander <ea@pexip.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^15.6.0",
+    "@types/sharp": "^0.28.1",
+    "typescript": "^4.2.4"
+  }
+}

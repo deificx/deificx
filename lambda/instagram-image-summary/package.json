@@ -1,0 +1,18 @@
+{
+  "name": "deificx-lambda-instagram-image-summary",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:deificx/deificx",
+  "author": "Even Alander <even@alander.org>",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "aws-sdk": "^2.884.0",
+    "canvas": "^2.8.0",
+    "sharp": "^0.28.1"
+  },
+  "scripts": {
+    "build": "rm instagram-image-summary.zip && zip -r instagram-image-summary.zip .",
+    "upload": "aws lambda update-function-code --function-name instagram-image-summary --zip-file fileb://instagram-image-summary.zip --region eu-central-1 --profile deificx",
+    "start": "yarn build && yarn upload"
+  }
+}

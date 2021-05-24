@@ -8,8 +8,8 @@ const target =
 getLatestInstagram()
   .then(calculateDiff)
   .then(actions)
-  .then(getInstagramData)
-  .then(writeReadme)
+  // .then(getInstagramData)
+  // .then(writeReadme)
   .catch((reason) => console.error(reason));
 
 function getLatestInstagram() {
