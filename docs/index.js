@@ -6,8 +6,8 @@ if (code) {
   fetch(
     "https://7po1em59g7.execute-api.eu-central-1.amazonaws.com/default/instagram-gateway",
     {
+      body: JSON.stringify({ code }, null, 2),
       headers: {
-        body: JSON.stringify({ code }, null, 2),
         "Content-Type": "application/json",
       },
       method: "POST",
