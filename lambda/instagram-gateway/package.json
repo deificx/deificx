@@ -1,0 +1,17 @@
+{
+  "name": "deificx-lambda-instagram-gateway",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:deificx/deificx",
+  "author": "Even Alander <even@alander.org>",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "aws-sdk": "^2.884.0"
+  },
+  "scripts": {
+    "build": "yarn tsc && rm instagram-gateway.zip && zip -r instagram-gateway.zip .",
+    "upload": "aws lambda update-function-code --function-name instagram-gateway --zip-file fileb://instagram-gateway.zip --region eu-central-1 --profile deificx",
+    "start": "yarn build && yarn upload",
+    "tsc": "./../../node_modules/.bin/tsc"
+  }
+}

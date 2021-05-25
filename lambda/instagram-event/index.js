@@ -23,14 +23,6 @@ exports.handler = (event) =>
       });
   });
 
-function saveMeta(data) {
-  return putToS3({
-    Key: `${data.id}.json`,
-    Body: JSON.stringify(data, null, 2),
-    ContentType: "application/json; charset=utf-8",
-  });
-}
-
 function parse(event) {
   return new Promise(function jsonParse(resolve, reject) {
     try {
@@ -41,6 +33,14 @@ function parse(event) {
     } catch (reason) {
       reject(reason);
     }
+  });
+}
+
+function saveMeta(data) {
+  return putToS3({
+    Key: `${data.id}.json`,
+    Body: JSON.stringify(data, null, 2),
+    ContentType: "application/json; charset=utf-8",
   });
 }
 

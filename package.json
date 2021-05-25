@@ -6,6 +6,7 @@
   "author": "Even Alander <ea@pexip.com>",
   "license": "MIT",
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.76",
     "@types/node": "^15.6.0",
     "@types/sharp": "^0.28.1",
     "typescript": "^4.2.4"
