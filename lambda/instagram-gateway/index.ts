@@ -1,4 +1,4 @@
-import type { APIGatewayEvent } from "aws-lambda";
+import type { APIGatewayProxyEventV2 } from "aws-lambda";
 // import AWS from "aws-sdk";
 import https from "https";
 import querystring from "querystring";
@@ -11,7 +11,7 @@ const INSTAGRAM_APP_SECRET = process.env["INSTAGRAM_APP_SECRET"];
 //   apiVersion: "2012-10-17",
 // });
 
-exports.handler = (event: APIGatewayEvent) =>
+exports.handler = (event: APIGatewayProxyEventV2) =>
   new Promise((resolve) => {
     parse(event)
       .then((data) => {
@@ -26,8 +26,9 @@ exports.handler = (event: APIGatewayEvent) =>
       });
   });
 
-async function parse(event: APIGatewayEvent) {
-  if (event.httpMethod === "POST") {
+async function parse(event: APIGatewayProxyEventV2) {
+  console.log(event);
+  if (event.requestContext.http.method === "POST") {
     const action = event.queryStringParameters?.["action"];
     const payload = JSON.parse(event.body as string);
     const result = await instagramActions(action ?? "", payload);
