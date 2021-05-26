@@ -1,4 +1,7 @@
-import type { APIGatewayProxyEventV2 } from "aws-lambda";
+import type {
+  APIGatewayProxyEventV2,
+  APIGatewayProxyResultV2,
+} from "aws-lambda";
 // import AWS from "aws-sdk";
 import https from "https";
 import querystring from "querystring";
@@ -8,90 +11,120 @@ import querystring from "querystring";
 //   apiVersion: "2012-10-17",
 // });
 
-const res = (data: unknown, statusCode = 200) => ({
-  body: JSON.stringify(data, null, 2),
+interface Response {
+  body: Record<string, string>;
+  cookies?: string[];
+}
+
+const res = ({
+  body,
+  cookies,
+  statusCode = 200,
+}: {
+  body?: unknown;
+  cookies?: string[];
+  statusCode?: number;
+}): APIGatewayProxyResultV2 => ({
+  body: body ? JSON.stringify(body, null, 2) : undefined,
+  cookies,
   statusCode,
 });
 
-exports.handler = async (event: APIGatewayProxyEventV2) => {
+exports.handler = async (
+  event: APIGatewayProxyEventV2
+): Promise<APIGatewayProxyResultV2> => {
   try {
-    const data = await parse(event);
-    console.log(data);
-    return res(data);
+    return await parse(event);
   } catch (reason) {
     console.error(reason);
-    return res(reason, 500);
+    return res({ body: reason, statusCode: 500 });
   }
 };
 
-async function parse(event: APIGatewayProxyEventV2) {
+async function parse(
+  event: APIGatewayProxyEventV2
+): Promise<APIGatewayProxyResultV2> {
   console.log(event);
+
   const {
+    cookies,
     requestContext: {
       http: { method },
     },
   } = event;
+
   if (method === "OPTIONS") {
-    return Promise.resolve({});
+    return Promise.resolve(res({}));
   }
-  if (method === "POST") {
+
+  if (method === "GET") {
     const action = event.queryStringParameters?.["action"];
-    const payload = JSON.parse(event.body as string);
-    const result = await instagramActions(action ?? "", payload);
-    return { action, payload, result };
+    const token =
+      event.queryStringParameters?.["code"] ??
+      extractAccessTokenFromCookie(cookies ?? []);
+    const result = await instagramActions(action ?? "", token);
+    return res(result);
   }
-  return Promise.reject("only POST actions supported");
+
+  return Promise.reject("only GET actions supported");
 }
 
-function instagramActions(action: string, payload: unknown) {
+function instagramActions(action: string, token: string): Promise<Response> {
   console.log(`performing action: ${action}`);
   switch (action) {
-    case "short_lived_token":
+    case "login":
       return fetch(
         "https://api.instagram.com/oauth/access_token",
         { method: "POST" },
         {
           client_id: process.env["INSTAGRAM_APP_ID"],
           client_secret: process.env["INSTAGRAM_APP_SECRET"],
-          code: pick(payload, "code"),
+          code: token,
           grant_type: "authorization_code",
           redirect_uri: "https://deificx.alander.dev/",
         }
-      );
+      )
+        .then((result) => {
+          const { access_token } = result as { access_token?: string };
 
-    case "long_lived_token": {
-      return fetch(
-        `https://graph.instagram.com/access_token`,
-        { method: "GET" },
-        {
-          grant_type: "ig_exchange_token",
-          client_secret: process.env["INSTAGRAM_APP_SECRET"],
-          access_token: pick(payload, "accessToken"),
-        }
-      );
-    }
+          if (!access_token) {
+            throw new Error("couldn't retrieve access_token from result");
+          }
+
+          return fetch(
+            `https://graph.instagram.com/access_token`,
+            { method: "GET" },
+            {
+              grant_type: "ig_exchange_token",
+              client_secret: process.env["INSTAGRAM_APP_SECRET"],
+              access_token,
+            }
+          );
+        })
+        .then((result: Response) => {
+          result.cookies = [`access_token=${result.body["access_token"]}`];
+          return result;
+        });
 
     case "list_media": {
-      const userID = pick(payload, "userID");
       return fetch(
-        `https://graph.instagram.com/${userID}/media`,
+        `https://graph.instagram.com/me/media`,
         { method: "GET" },
         {
           fields:
             "caption,id,media_type,media_url,permalink,thumbnail_url,timestamp,username",
-          access_token: pick(payload, "accessToken"),
+          access_token: token,
         }
       );
     }
 
     case "list_profile": {
-      const userID = pick(payload, "userID");
       return fetch(
-        `https://graph.instagram.com/${userID}`,
+        `https://graph.instagram.com/me`,
         { method: "GET" },
         {
           fields: "id,media_count,username",
-          access_token: pick(payload, "accessToken"),
+          access_token: token,
         }
       );
     }
@@ -105,7 +138,7 @@ function fetch(
   url: string,
   options: https.RequestOptions,
   data?: querystring.ParsedUrlQueryInput
-) {
+): Promise<{ body: Record<string, string> }> {
   const postData = querystring.stringify(data);
   let href = url;
 
@@ -134,8 +167,7 @@ function fetch(
       res.on("error", (error) => console.error(error.message));
       res.on("end", () => {
         try {
-          const parsed = JSON.parse(data);
-          resolve(parsed);
+          resolve({ body: JSON.parse(data) });
         } catch (reason) {
           reject(reason);
         }
@@ -155,13 +187,13 @@ function fetch(
   });
 }
 
-function pick(object: unknown, key: string): string {
-  if (
-    typeof object === "object" &&
-    !!object &&
-    Object.hasOwnProperty.call(object, key)
-  ) {
-    return (object as { [key: string]: string })[key] ?? "";
-  }
-  return "";
+function extractAccessTokenFromCookie(cookies: string[]): string {
+  const record = cookies.reduce((acc, cur) => {
+    const [key, val] = cur.split("=");
+    if (key && val) {
+      return { ...acc, [key]: val };
+    }
+    return acc;
+  }, {} as Record<string, string>);
+  return record["access_token"] ?? "";
 }
