@@ -14,7 +14,7 @@ function login(code) {
 function get(action) {
   return fetch(
     `https://7po1em59g7.execute-api.eu-central-1.amazonaws.com/default/instagram-gateway?action=${action}`,
-    { credentials: "same-origin" }
+    { credentials: "include" }
   )
     .then((res) => {
       console.log(res);
