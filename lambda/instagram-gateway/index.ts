@@ -28,6 +28,9 @@ const res = ({
   const res = {
     body: body ? JSON.stringify(body, null, 2) : undefined,
     cookies,
+    headers: {
+      "content-type": "application/json",
+    },
     statusCode,
   };
   console.log(res);
@@ -107,7 +110,9 @@ function instagramActions(action: string, token: string): Promise<Response> {
           }
         })
         .then((result: Response) => {
-          result.cookies = [`access_token=${result.body["access_token"]}`];
+          result.cookies = [
+            `__Host-access_token=${result.body["access_token"]}; SameSite=Strict; Secure; HttpOnly`,
+          ];
           return result;
         });
 
@@ -201,5 +206,5 @@ function extractAccessTokenFromCookie(cookies: string[]): string {
     }
     return acc;
   }, {} as Record<string, string>);
-  return record["access_token"] ?? "";
+  return record["__Host-access_token"] ?? "";
 }
