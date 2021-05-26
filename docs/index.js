@@ -32,3 +32,5 @@ function init() {
     login();
   }
 }
+
+init();
