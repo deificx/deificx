@@ -1,4 +1,4 @@
-function login() {
+function login(code) {
   return fetch(
     `https://7po1em59g7.execute-api.eu-central-1.amazonaws.com/default/instagram-gateway?action=login&code=${code}`
   )
@@ -29,7 +29,7 @@ function init() {
   const code = params.get("code");
 
   if (code) {
-    login();
+    login(code);
   }
 }
 
