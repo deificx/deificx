@@ -24,11 +24,15 @@ const res = ({
   body?: unknown;
   cookies?: string[];
   statusCode?: number;
-}): APIGatewayProxyResultV2 => ({
-  body: body ? JSON.stringify(body, null, 2) : undefined,
-  cookies,
-  statusCode,
-});
+}): APIGatewayProxyResultV2 => {
+  const res = {
+    body: body ? JSON.stringify(body, null, 2) : undefined,
+    cookies,
+    statusCode,
+  };
+  console.log(res);
+  return res;
+};
 
 exports.handler = async (
   event: APIGatewayProxyEventV2
@@ -52,10 +56,6 @@ async function parse(
       http: { method },
     },
   } = event;
-
-  if (method === "OPTIONS") {
-    return Promise.resolve(res({}));
-  }
 
   if (method === "GET") {
     const action = event.queryStringParameters?.["action"];
@@ -84,22 +84,27 @@ function instagramActions(action: string, token: string): Promise<Response> {
           redirect_uri: "https://deificx.alander.dev/",
         }
       )
-        .then((result) => {
-          const { access_token } = result as { access_token?: string };
+        .then(async (result) => {
+          const { access_token } = result.body;
 
           if (!access_token) {
             throw new Error("couldn't retrieve access_token from result");
           }
 
-          return fetch(
-            `https://graph.instagram.com/access_token`,
-            { method: "GET" },
-            {
-              grant_type: "ig_exchange_token",
-              client_secret: process.env["INSTAGRAM_APP_SECRET"],
-              access_token,
-            }
-          );
+          try {
+            return await fetch(
+              `https://graph.instagram.com/access_token`,
+              { method: "GET" },
+              {
+                grant_type: "ig_exchange_token",
+                client_secret: process.env["INSTAGRAM_APP_SECRET"],
+                access_token,
+              }
+            );
+          } catch (reason) {
+            console.error(reason);
+            return result;
+          }
         })
         .then((result: Response) => {
           result.cookies = [`access_token=${result.body["access_token"]}`];
@@ -157,7 +162,7 @@ function fetch(
 
   return new Promise((resolve, reject) => {
     const req = https.request(href, options, (res) => {
-      console.log(`STATUS: ${res.statusCode}`);
+      console.log(`STATUS: ${res.statusCode}, ${res.statusMessage}`);
       console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
 
       let data = "";
@@ -167,6 +172,7 @@ function fetch(
       res.on("error", (error) => console.error(error.message));
       res.on("end", () => {
         try {
+          console.log(data);
           resolve({ body: JSON.parse(data) });
         } catch (reason) {
           reject(reason);
