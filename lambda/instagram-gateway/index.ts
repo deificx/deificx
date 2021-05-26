@@ -111,7 +111,7 @@ function instagramActions(action: string, token: string): Promise<Response> {
         })
         .then((result: Response) => {
           result.cookies = [
-            `__Host-access_token=${result.body["access_token"]}; SameSite=Strict; Secure; HttpOnly`,
+            `__Host-access_token=${result.body["access_token"]}; HttpOnly; Path=/; SameSite=Strict; Secure`,
           ];
           return result;
         });
