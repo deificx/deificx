@@ -111,7 +111,7 @@ function instagramActions(action: string, token: string): Promise<Response> {
         })
         .then((result: Response) => {
           result.cookies = [
-            `__Host-access_token=${result.body["access_token"]}; HttpOnly; Path=/; SameSite=Strict; Secure`,
+            `__Host-access_token=${result.body["access_token"]}; HttpOnly; Path=/; Secure`,
           ];
           return result;
         });
@@ -160,7 +160,7 @@ function fetch(
     options.headers["Content-Type"] = "application/x-www-form-urlencoded";
     options.headers["Content-Length"] = Buffer.byteLength(postData);
   } else {
-    href += postData;
+    href += `?${postData}`;
   }
 
   console.log(`fetch [${options.method}] - ${href}`);
