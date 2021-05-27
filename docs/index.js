@@ -18,7 +18,7 @@ function init() {
   const code = params.get("code");
 
   if (code) {
-    login({ action: "login", code });
+    request({ action: "login", code });
   }
 }
 
